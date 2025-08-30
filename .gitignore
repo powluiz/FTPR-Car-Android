@@ -4,8 +4,10 @@ build/
 */build/
 !*/src/**/build/
 
-# Local configuration file (local.properties)
+# Local configuration files
 local.properties
+local.defaults.properties
+secrets.properties
 
 # Android Studio specific
 .idea/
