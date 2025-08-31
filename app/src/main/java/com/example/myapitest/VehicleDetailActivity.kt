@@ -69,14 +69,18 @@ class VehicleDetailActivity : AppCompatActivity(), OnMapReadyCallback {
                 when (result) {
                     is Result.Success -> {
                         vehicle = result.data.value
-                        binding.name.text = vehicle.name
-                        binding.year.text = vehicle.year
+                        binding.name.setText(vehicle.name)
+                        binding.year.setText(vehicle.year)
                         binding.license.setText(vehicle.licence)
                         binding.image.loadUrl(vehicle.imageUrl)
                         loadItemLocationInGoogleMap()
                     }
                     is Result.Error -> {
-                        Toast.makeText(this@VehicleDetailActivity, "Erro", Toast.LENGTH_LONG).show()
+                        Toast.makeText(
+                            this@VehicleDetailActivity,
+                            R.string.unknown_error, Toast.LENGTH_LONG
+                        ).show()
+                        finish()
                     }
                 }
             }
@@ -84,9 +88,63 @@ class VehicleDetailActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     private fun deleteVehicle() {
+        CoroutineScope(Dispatchers.IO).launch {
+            val result = safeApiCall { RetrofitClient.apiService.deleteVehicle(vehicle.id) }
+
+            withContext(Dispatchers.Main) {
+                when (result) {
+                    is Result.Error -> {
+                        Toast.makeText(
+                            this@VehicleDetailActivity,
+                            R.string.error_delete,
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                    is Result.Success -> {
+                        Toast.makeText(
+                            this@VehicleDetailActivity,
+                            R.string.success_delete,
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        finish()
+                    }
+                }
+            }
+        }
     }
 
     private fun editVehicle() {
+        CoroutineScope(Dispatchers.IO).launch {
+            val result = safeApiCall {
+                RetrofitClient.apiService.updateVehicle(
+                    vehicle.id,
+                    vehicle.copy(
+                        name = binding.name.text.toString(),
+                        year = binding.year.text.toString(),
+                        licence = binding.license.text.toString(),
+                    )
+                )
+            }
+            withContext(Dispatchers.Main) {
+                when (result) {
+                    is Result.Error -> {
+                        Toast.makeText(
+                            this@VehicleDetailActivity,
+                            R.string.error_update,
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                    is Result.Success -> {
+                        Toast.makeText(
+                            this@VehicleDetailActivity,
+                            R.string.success_update,
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        finish()
+                    }
+                }
+            }
+        }
     }
 
 

@@ -76,7 +76,7 @@ class MainActivity : AppCompatActivity() {
                         vehicleAdapter.updateVehicles(result.data)
                     }
                     is Result.Error -> {
-                        Toast.makeText(this@MainActivity, "Erro", Toast.LENGTH_LONG).show()
+                        Toast.makeText(this@MainActivity, R.string.unknown_error, Toast.LENGTH_LONG).show()
                     }
                 }
             }

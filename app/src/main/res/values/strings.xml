@@ -1,3 +1,18 @@
 <resources>
     <string name="app_name">MyApiTest - Luiz Ricardo Brumati De Lima</string>
+    <string name="success_create">Veículo criado</string>
+    <string name="error_create">Erro ao criar o veículo</string>
+    <string name="success_update">Veículo atualizado</string>
+    <string name="error_update">Erro ao atualizar o veículo</string>
+    <string name="success_delete">Veículo excluído</string>
+    <string name="error_delete">Erro ao excluir o veículo</string>
+    <string name="error_request_location_permission">Permissão de localização negada!</string>
+    <string name="error_validate_form">Por favor, preencha o campo: %1$s</string>
+    <string name="error_validate_form_location">Por favor, selecione a localização no mapa.</string>
+    <string name="error_request_camera">Permissão de câmera não concedida</string>
+    <string name="error_upload_image">Erro ao realizar o upload da imagem</string>
+    <string name="error_login">Erro ao fazer Login</string>
+    <string name="success_login_sent">Código enviado por SMS\n</string>
+    <string name="error_login_verification">Erro ao verificar o código SMS</string>
+    <string name="unknown_error">Erro Desconhecido</string>
 </resources>
