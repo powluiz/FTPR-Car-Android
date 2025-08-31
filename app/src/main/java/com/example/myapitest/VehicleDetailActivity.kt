@@ -1,18 +1,14 @@
 package com.example.myapitest
 
-import android.Manifest
-import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.os.Bundle
 import android.view.View
 import android.widget.EditText
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
-import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.result.ActivityResultLauncher
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat
 import androidx.core.widget.addTextChangedListener
 import com.example.myapitest.databinding.ActivityVehicleDetailBinding
 import com.example.myapitest.model.Vehicle
@@ -20,54 +16,45 @@ import com.example.myapitest.service.Result
 import com.example.myapitest.service.RetrofitClient
 import com.example.myapitest.service.safeApiCall
 import com.example.myapitest.ui.loadUrl
-import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.maps.CameraUpdateFactory
-import com.google.android.gms.maps.GoogleMap
-import com.google.android.gms.maps.OnMapReadyCallback
+import com.example.myapitest.util.MapManager
+import com.example.myapitest.util.PermissionManager
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.location.LocationServices
-import com.google.android.gms.maps.model.MarkerOptions
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-class VehicleDetailActivity : AppCompatActivity(), OnMapReadyCallback {
+class VehicleDetailActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityVehicleDetailBinding
-
     private lateinit var vehicle: Vehicle
-    private lateinit var map: GoogleMap
-
-    private lateinit var fusedLocationClient: FusedLocationProviderClient
-    private val locationPermissionRequest = registerForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { isGranted: Boolean ->
-        if (isGranted) {
-            fetchCurrentLocation()
-        } else {
-            Toast.makeText(this, R.string.error_request_location_permission, Toast.LENGTH_SHORT).show()
-        }
-    }
+    private lateinit var mapManager: MapManager
+    private lateinit var locationPermissionLauncher: ActivityResultLauncher<String>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityVehicleDetailBinding.inflate(layoutInflater)
         enableEdgeToEdge()
         setContentView(binding.root)
+        setupManagers()
         setupView()
         loadData()
-        setupGoogleMap()
-
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
     }
 
-    override fun onMapReady(googleMap: GoogleMap) {
-        map = googleMap
-        if (::vehicle.isInitialized) {
-            loadItemLocationInGoogleMap()
+    private fun setupManagers() {
+        val mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
+        mapManager = MapManager(this, mapFragment) {
+            if (::vehicle.isInitialized) {
+                loadItemLocationInGoogleMap()
+            }
         }
+
+        locationPermissionLauncher = PermissionManager.registerForLocationPermission(
+            activity = this,
+            onGranted = { fetchCurrentLocationWithManager() },
+            onDenied = { Toast.makeText(this, R.string.error_request_location_permission, Toast.LENGTH_SHORT).show() }
+        )
     }
 
     private fun setupView() {
@@ -104,76 +91,41 @@ class VehicleDetailActivity : AppCompatActivity(), OnMapReadyCallback {
         }
 
         binding.currentLocationCTA.setOnClickListener {
-            requestLocationPermission()
+            PermissionManager.requestLocationPermission(
+                context = this,
+                locationPermissionLauncher = locationPermissionLauncher,
+                onPermissionAlreadyGranted = { fetchCurrentLocationWithManager() }
+            )
         }
     }
 
-    private fun requestLocationPermission() {
-        when {
-            ContextCompat.checkSelfPermission(
-                this,
-                Manifest.permission.ACCESS_FINE_LOCATION
-            ) == PackageManager.PERMISSION_GRANTED -> {
-                fetchCurrentLocation()
+    private fun fetchCurrentLocationWithManager() {
+        mapManager.fetchAndShowCurrentUserLocation(
+            onSuccess = { latLng ->
+                binding.latitude.setText(latLng.latitude.toString())
+                binding.longitude.setText(latLng.longitude.toString())
+                Toast.makeText(this, R.string.success_request_location, Toast.LENGTH_SHORT).show()
+            },
+            onFailure = { errorMessage ->
+                Toast.makeText(this, errorMessage, Toast.LENGTH_SHORT).show()
             }
-            else -> {
-                locationPermissionRequest.launch(Manifest.permission.ACCESS_FINE_LOCATION)
-            }
-        }
-    }
-
-    @SuppressLint("MissingPermission")
-    private fun fetchCurrentLocation() {
-        fusedLocationClient.lastLocation
-            .addOnSuccessListener { location ->
-                if (location != null) {
-                    binding.latitude.setText(location.latitude.toString())
-                    binding.longitude.setText(location.longitude.toString())
-                    Toast.makeText(this, R.string.success_request_location, Toast.LENGTH_SHORT).show()
-                } else {
-                    Toast.makeText(this, R.string.error_request_location, Toast.LENGTH_SHORT).show()
-                }
-            }
+        )
     }
 
     private fun loadItemLocationInGoogleMap() {
-        vehicle.place.apply {
-            binding.googleMapContent.visibility = View.VISIBLE
-            val latLong = LatLng(lat, long)
-            showLocationOnMap(latLong)
-        }
+        binding.googleMapContent.visibility = View.VISIBLE
+        val latLong = LatLng(vehicle.place.lat, vehicle.place.long)
+        mapManager.showLocationOnMap(latLong, vehicle.name)
     }
 
     private fun updateMapFromTextFields() {
-        if (!::map.isInitialized) return
-
         val lat = binding.latitude.text.toString().toDoubleOrNull()
         val long = binding.longitude.text.toString().toDoubleOrNull()
 
         if (lat != null && long != null) {
             val newPosition = LatLng(lat, long)
-            showLocationOnMap(newPosition)
+            mapManager.showLocationOnMap(newPosition, vehicle.name)
         }
-    }
-
-    private fun showLocationOnMap(position: LatLng) {
-        map.clear()
-        map.addMarker(
-            MarkerOptions()
-                .position(position)
-                .title(vehicle.name)
-        )
-        map.moveCamera(
-            CameraUpdateFactory.newLatLngZoom(
-                position,
-                15f
-            )
-        )
-    }
-
-    private fun setupGoogleMap() {
-        val mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
-        mapFragment.getMapAsync(this)
     }
 
     private fun loadData() {
@@ -192,7 +144,9 @@ class VehicleDetailActivity : AppCompatActivity(), OnMapReadyCallback {
                         binding.latitude.setText(vehicle.place.lat.toString())
                         binding.longitude.setText(vehicle.place.long.toString())
                         binding.image.loadUrl(vehicle.imageUrl)
-                        loadItemLocationInGoogleMap()
+                        if (mapManager.isMapReady) {
+                            loadItemLocationInGoogleMap()
+                        }
                     }
                     is Result.Error -> {
                         Toast.makeText(
@@ -297,7 +251,6 @@ class VehicleDetailActivity : AppCompatActivity(), OnMapReadyCallback {
             editText.error = null
         }
     }
-
 
     companion object {
         private const val ARG_ID = "arg_id"
