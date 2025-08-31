@@ -1,6 +1,7 @@
 package com.example.myapitest.service
 
 import com.example.myapitest.model.Vehicle
+import com.example.myapitest.model.VehicleById
 import retrofit2.http.GET
 import retrofit2.http.Path
 
@@ -10,5 +11,5 @@ interface ApiService {
     suspend fun getVehicles(): List<Vehicle>
 
     @GET("car/{id}")
-    suspend fun getVehicleById(@Path("id") id: String): Vehicle
+    suspend fun getVehicleById(@Path("id") id: String): VehicleById
 }

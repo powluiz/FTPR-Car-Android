@@ -48,8 +48,11 @@ class MainActivity : AppCompatActivity() {
 
     private fun setupView() {
         binding.recyclerView.layoutManager = LinearLayoutManager(this)
-        vehicleAdapter = VehicleAdapter(itemClickListener = { item ->
-            // TODO: Lógica de clique
+        vehicleAdapter = VehicleAdapter(itemClickListener = { vehicle ->
+            startActivity(VehicleDetailActivity.newIntent(
+                context = this@MainActivity,
+                vehicleId = vehicle.id
+            ))
         })
         binding.recyclerView.adapter = vehicleAdapter
         binding.swipeRefreshLayout.setOnRefreshListener {

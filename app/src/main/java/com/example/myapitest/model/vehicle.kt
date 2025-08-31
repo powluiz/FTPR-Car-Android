@@ -8,3 +8,8 @@ data class Vehicle (
     val licence: String,
     val place: Location,
 )
+
+data class VehicleById (
+    val id: String,
+    val value: Vehicle
+)
