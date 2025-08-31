@@ -51,6 +51,7 @@ class MainActivity : AppCompatActivity() {
         vehicleAdapter = VehicleAdapter(itemClickListener = { item ->
             // TODO: Lógica de clique
         })
+        binding.recyclerView.adapter = vehicleAdapter
         binding.swipeRefreshLayout.setOnRefreshListener {
             fetchItems()
         }

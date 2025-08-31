@@ -48,16 +48,3 @@ class VehicleAdapter(
         val license: TextView = view.findViewById(R.id.license)
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
