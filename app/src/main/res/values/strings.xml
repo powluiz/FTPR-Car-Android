@@ -7,6 +7,8 @@
     <string name="success_delete">Veículo excluído</string>
     <string name="error_delete">Erro ao excluir o veículo</string>
     <string name="error_request_location_permission">Permissão de localização negada!</string>
+    <string name="success_request_location">Localização atualizada</string>
+    <string name="error_request_location">Erro ao obter a localização</string>
     <string name="error_validate_form">Por favor, preencha o campo: %1$s</string>
     <string name="error_validate_form_location">Por favor, selecione a localização no mapa.</string>
     <string name="error_request_camera">Permissão de câmera não concedida</string>
