@@ -1,12 +1,23 @@
 package com.example.myapitest
 
 import android.os.Bundle
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.myapitest.databinding.ActivityMainBinding
+import com.example.myapitest.service.RetrofitClient
+import com.example.myapitest.service.safeApiCall
+import com.example.myapitest.adapter.VehicleAdapter
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import com.example.myapitest.service.Result
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
+    private lateinit var vehicleAdapter: VehicleAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -36,14 +47,35 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupView() {
-        // TODO
+        binding.recyclerView.layoutManager = LinearLayoutManager(this)
+        vehicleAdapter = VehicleAdapter(itemClickListener = { item ->
+            // TODO: Lógica de clique
+        })
+        binding.swipeRefreshLayout.setOnRefreshListener {
+            fetchItems()
+        }
     }
 
     private fun requestLocationPermission() {
         // TODO
     }
 
-    private fun fetchItems() {
-        // TODO
+    private fun fetchItems(){
+        binding.swipeRefreshLayout.isRefreshing = true
+        CoroutineScope(Dispatchers.IO).launch {
+            val result = safeApiCall { RetrofitClient.apiService.getVehicles() }
+
+            withContext(Dispatchers.Main) {
+                binding.swipeRefreshLayout.isRefreshing = false
+                when (result) {
+                    is Result.Success -> {
+                        vehicleAdapter.updateVehicles(result.data)
+                    }
+                    is Result.Error -> {
+                        Toast.makeText(this@MainActivity, "Erro", Toast.LENGTH_LONG).show()
+                    }
+                }
+            }
+        }
     }
 }
