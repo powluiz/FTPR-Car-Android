@@ -55,6 +55,11 @@ class MainActivity : AppCompatActivity() {
             ))
         })
         binding.recyclerView.adapter = vehicleAdapter
+
+        binding.addCta.setOnClickListener {
+            startActivity(NewVehicleActivity.newIntent(this))
+        }
+
         binding.swipeRefreshLayout.setOnRefreshListener {
             fetchItems()
         }

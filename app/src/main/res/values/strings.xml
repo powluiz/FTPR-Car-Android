@@ -10,7 +10,9 @@
     <string name="success_request_location">Localização atualizada</string>
     <string name="error_request_location">Erro ao obter a localização</string>
     <string name="error_validate_form">Por favor, preencha o campo: %1$s</string>
-    <string name="error_validate_form_location">Por favor, selecione a localização no mapa.</string>
+    <string name="error_validate_all_form_fields">Preencha todos os campos requeridos</string>
+    <string name="error_validate_form_location">Por favor, selecione a localização do veículo</string>
+    <string name="error_invalid_location_values">Valores de latitude/longitude inválidos</string>
     <string name="error_request_camera">Permissão de câmera não concedida</string>
     <string name="error_upload_image">Erro ao realizar o upload da imagem</string>
     <string name="error_login">Erro ao fazer Login</string>
@@ -18,4 +20,10 @@
     <string name="error_login_verification">Erro ao verificar o código SMS</string>
     <string name="error_map_load">Erro ao carregar o mapa</string>
     <string name="unknown_error">Erro Desconhecido</string>
+    <string name="vehicle_year">Modelo</string>
+    <string name="vehicle_plate">ABC-1234</string>
+    <string name="latitude">Latitude</string>
+    <string name="longitude">Longitude</string>
+    <string name="current_location_label">Usar Localização Atual</string>
+    <string name="vehicle_name">Nome</string>
 </resources>
