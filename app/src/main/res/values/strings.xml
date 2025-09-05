@@ -26,4 +26,5 @@
     <string name="longitude">Longitude</string>
     <string name="current_location_label">Usar Localização Atual</string>
     <string name="vehicle_name">Nome</string>
+    <string name="image_upload_hint">Toque para atualizar a imagem</string>
 </resources>

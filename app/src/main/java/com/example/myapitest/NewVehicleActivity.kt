@@ -3,6 +3,7 @@ package com.example.myapitest
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Bundle
@@ -30,10 +31,12 @@ import com.example.myapitest.util.PermissionManager
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
+import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.io.ByteArrayOutputStream
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -54,10 +57,9 @@ class NewVehicleActivity : AppCompatActivity() {
     ) {
         if (it.resultCode == Activity.RESULT_OK) {
             imageFile?.let {
-                binding.image.setImageBitmap(BitmapFactory.decodeFile(it.path))
-                uploadedImageUrl = it.path
+                uploadImageToFirebase()
             }
-//            uploadImageToFirebase()
+
         }
     }
 
@@ -273,6 +275,38 @@ class NewVehicleActivity : AppCompatActivity() {
                 }
             }
         }
+    }
+
+    private fun uploadImageToFirebase() {
+        val storageRef = FirebaseStorage.getInstance().reference
+
+        val imagesRef = storageRef.child("images/${UUID.randomUUID()}.jpg")
+
+        val baos = ByteArrayOutputStream()
+        val imageBitmap = BitmapFactory.decodeFile(imageFile!!.path)
+        imageBitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos)
+        val data = baos.toByteArray()
+
+        onLoadingImage(true)
+        imagesRef.putBytes(data)
+            .addOnFailureListener {
+                Toast.makeText(this, R.string.error_upload_image, Toast.LENGTH_SHORT).show()
+            }
+            .addOnSuccessListener {
+                imagesRef.downloadUrl
+                    .addOnCompleteListener {
+                        onLoadingImage(false)
+                    }
+                    .addOnSuccessListener { uri ->
+                        binding.image.setImageBitmap(BitmapFactory.decodeFile(uri.toString()))
+                        uploadedImageUrl = uri.toString()
+                    }
+            }
+    }
+
+    private fun onLoadingImage(isLoading: Boolean) {
+        binding.image.isEnabled = !isLoading
+        binding.createCTA.isEnabled = !isLoading
     }
 
     companion object {
